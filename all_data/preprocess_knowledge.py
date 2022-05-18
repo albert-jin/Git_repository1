@@ -2,12 +2,14 @@ import requests
 import os
 import pandas as pd
 
-app_id = '2e277091'
-app_key = '5c6df7a25970c5ccdb1f7b32515a7afd'
+app_id = 'c2e7b1fe'
+app_key = 'b41be5b3b08f91ebe3d849570f15c52a'
 
 path = '/api/v2/search/en-gb'
 entry_path = '/api/v2/entries/en-gb/'
+language_type = 'en-gb'
 urlOxfordApiProxy = 'https://od-api.oxforddictionaries.com'
+urlProxy = "https://developer.oxforddictionaries.com/api_docs/proxy"
 methodRequestGet = 'GET'
 
 def request_word_explanation(query_word):
@@ -16,12 +18,23 @@ def request_word_explanation(query_word):
     :param query_word: 查询单词
     :return: 返回描述文本 {'status': False} or {'status': True, 'result': final_dict_knowledge}
     '''
-    target_headers = {
-  "Accept": "application/json",
-  "app_id": app_id,
-  "app_key": app_key
-}
-    r = requests.get(urlOxfordApiProxy+path, headers=target_headers,params={'q':query_word})
+    target_headers = {'X-Apidocs-Url': urlOxfordApiProxy,
+                      'X-Apidocs-Method': methodRequestGet,
+                      'X-Apidocs-Query': 'q=' + query_word,
+                      'X-Apidocs-Path': path,
+                      'app_id': app_id,
+                      'app_key': app_key}
+    r = requests.get(urlProxy, headers=target_headers)
+    ''' r.text.results[0] 一览
+        {
+        "id": "pigs_in_clover",
+        "label": "pigs in clover",
+        "matchString": "sbpigs",
+        "matchType": "fuzzy",
+        "score": 22.254377,
+        "word": "pigs in clover"
+        }
+    '''  # matchString 与原查询词汇的区别是：大小写统一
     if r.status_code != 200:
         substrs = query_word.split()
         if len(substrs) < 2:
@@ -36,18 +49,16 @@ def request_word_explanation(query_word):
 
     res = eval(r.text)  # matchString = 原词汇, id,word,label =fuzzy 匹配的词汇 , 优先使用word
     if 'results' not in res or len(res['results']) == 0:
-        substrs = query_word.split()
-        if len(substrs) < 2:
-            return {'status': False}
-        result = []
-        for str_ in substrs:
-            res = request_word_explanation(str_)
-            if res['status']:
-                result.append(res['result'])
-        return {'status': True, 'result': ' [SEP] '.join(result)}
+        return {'status': False}
     infos = res['results'][0]
     keyRetry = infos['word'] or infos['id'] or infos['label']  # 用于查牛津词典的名词解释的中间单词
-    r = requests.get(urlOxfordApiProxy+entry_path+keyRetry,headers={"app_id": app_id,"app_key": app_key})
+    target_entry_headers = {'X-Apidocs-Url': urlOxfordApiProxy,
+                            'X-Apidocs-Method': methodRequestGet,
+                            'X-Apidocs-Query': '',
+                            'X-Apidocs-Path': entry_path + keyRetry,
+                            'app_id': app_id,
+                            'app_key': app_key}
+    r = requests.get(urlProxy, headers=target_entry_headers)
     if r.status_code != 200:
         return {'status': False}
     res = eval(r.text)
@@ -65,9 +76,6 @@ def request_word_explanation(query_word):
     else:
         return {'status': False}
 
-
-
-
 knowledge_file = './dictionary_knowledge.txt'
 if not os.path.exists(knowledge_file):
     open(knowledge_file,'wt',encoding='utf-8').close()
@@ -75,8 +83,11 @@ knows = dict()
 with open(knowledge_file,'rt',encoding='utf-8') as inp:
     line = inp.readline()
     while line:
-        x,y = line.split('\t')
-        knows[x] = y.strip()
+        try:
+            x,y = line.split('\t')
+            knows[x] = y.strip()
+        except:
+            pass
         line = inp.readline()
 
 import time
@@ -105,7 +116,6 @@ for filename in os.listdir('.'):
                     polarity = polarity.strip()
                     if aspect in knows:
                         add_know = knows[aspect]
-                        count +=1
                     else:
                         time.sleep(8)
                         response = request_word_explanation(aspect)
@@ -121,4 +131,8 @@ for filename in os.listdir('.'):
                     data.append([sentence,aspect,polarity])
                 df = pd.DataFrame(data, columns=['review', 'aspect', 'sentiment'], dtype=int)
                 df.to_csv(out_filepath, sep='\t', index=False)
-                print("处理数",count)
+
+
+
+
+
