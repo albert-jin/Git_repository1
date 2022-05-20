@@ -2,6 +2,10 @@ import requests
 import os
 import pandas as pd
 
+# 牛津字典官网
+"https://developer.oxforddictionaries.com/"
+# 使用Oxford 的激励计划，每天hit访问量最多1000次，每分钟访问量最多60次，若超过使用量，则永久账号封禁
+
 app_id = 'c2e7b1fe'
 app_key = 'b41be5b3b08f91ebe3d849570f15c52a'
 

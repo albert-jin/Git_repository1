@@ -1,4 +1,11 @@
-## Welcome to GitHub Pages
+# 牛津字典-名称解释采集工具
+# 采集各种文本数据集中特定名词的名词解释
+https://developer.oxforddictionaries.com/
+> 下面都是废话，别看了
+
+
+
+### Welcome to GitHub Pages
 这是我的第一个项目的主页！！！！
 You can use the [editor on GitHub](https://github.com/albert-jin/Git_repository1/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 

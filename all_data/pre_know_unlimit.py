@@ -2,8 +2,11 @@ import requests
 import os
 import pandas as pd
 
-app_id = '083d8b1d'
-app_key = '94e9e3bb006a5320c70a826f51ef761a'
+# 该文件与preprocess_knowledge.py 不同在于，其使用了Oxford 官方提供的无限制的访问API，但是unlimited plan 每进行一次hit，花费约是2分钱RMB，
+# 若访问量过多则会很伤钱的
+# 以下id和key已过期，停止使用，请自行申请无限量账密并替换
+app_id = '0b1d83d8'
+app_key = '0c70a826f51ef761a94e9e3bb006a532'
 
 path = '/api/v2/search/en-gb'
 entry_path = '/api/v2/entries/en-gb/'
